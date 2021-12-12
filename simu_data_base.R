@@ -58,3 +58,24 @@ data = data[data$years<SS,]
 
 LongData = data
 SurvData = data.id
+
+# Generate data for joineRML package
+marker.name = sort(unique(LongData$item))
+WideData=list()
+for (i in 1:n){
+    tmp=LongData[LongData$ID==i,]
+    nrm=length(unique(tmp$years))
+    # long data
+    wideData=matrix(0,nrm,length(marker.name))
+    rest=tmp[tmp$item==marker.name[1],c(1,3:5)] # ID, years,AB.1, AB.2
+    # surv data
+    wideSurv=SurvData[SurvData$ID==i,]
+    wideSurvData=matrix(rep(as.matrix(wideSurv),each=nrm),nrow=nrm)
+    for (j in 1:length(marker.name)){
+        wideData[,j]=tmp[tmp$item==marker.name[j],"value"]
+    }
+    colnames(wideData)=marker.name
+    colnames(wideSurvData)=colnames(SurvData) # ID, fstat, ftime, x
+    WideData[[i]]=cbind(rest,wideData,wideSurvData)
+}
+data.mjoint = data.frame(do.call(rbind,WideData))
